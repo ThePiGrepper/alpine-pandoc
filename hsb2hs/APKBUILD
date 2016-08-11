@@ -1,0 +1,40 @@
+# Contributor: Michael Ekstrand <md@ekstrandom.net>
+# Maintainer: Michael Ekstrand <md@ekstrandom.net>
+pkgname=hsb2hs
+pkgver=0.3.1
+pkgrel=0
+pkgdesc="Haskell file inclusion preprocessor"
+url="https://hackage.haskell.org/package/hsb2hs"
+arch="x86_64"
+license="gpl3"
+depends="ca-certificates"
+makedepends="bash ghc ghc-dev cabal"
+install=""
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://hackage.haskell.org/package/$pkgname-$pkgver/$pkgname-$pkgver.tar.gz"
+_builddir="$srcdir/$pkgname-$pkgver"
+
+# Where we have cabal store our sandbox
+buildtmp="$_builddir/tmp"
+build() {
+	cd "$_builddir"
+	install -d "$buildtmp"
+	(
+		export PATH="${PATH}:$buildtmp/.cabal/bin"
+		export HOME="$buildtmp"
+		cabal update || return 1
+		cabal install -fstatic --ghc-option=-fllvm || return 1
+	)
+}
+
+package() {
+	cd "$_builddir"
+	install -d "$pkgdir/usr/bin" || return 1
+	pkg_bin="$buildtmp/.cabal/bin/$pkgname"
+	install -m755 "$pkg_bin" "$pkgdir/usr/bin" || return 1
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE" || return 1
+}
+
+md5sums="634544343e20f2be0eab8150baa65684  hsb2hs-0.3.1.tar.gz"
+sha256sums="8ad800820554f273ada083dfce2f463d920fb1ceb053255023a4c883b090f9d8  hsb2hs-0.3.1.tar.gz"
+sha512sums="3be89ccfee5b10e604434943ba22476c4cba2e9f4c57e169fd3674d4a46250c8d4c35edcb46ff5509ccfca80ec7d45a594008791970d15256864abfdf29381e1  hsb2hs-0.3.1.tar.gz"

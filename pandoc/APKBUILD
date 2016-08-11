@@ -1,0 +1,40 @@
+# Contributor: Michael Ekstrand <md@ekstrandom.net>
+# Maintainer: Michael Ekstrand <md@ekstrandom.net>
+pkgname=pandoc
+pkgver=1.17.2
+pkgrel=0
+pkgdesc="The Pandoc Document Processing System"
+url="http://pandoc.org"
+arch="x86_64"
+license="gpl3"
+depends="ca-certificates"
+makedepends="bash ghc ghc-dev cabal zlib-dev hsb2hs"
+install=""
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://hackage.haskell.org/package/$pkgname-$pkgver/$pkgname-$pkgver.tar.gz"
+_builddir="$srcdir/$pkgname-$pkgver"
+
+# Where we have cabal store our sandbox
+buildtmp="$_builddir/tmp"
+build() {
+	cd "$_builddir"
+	install -d "$buildtmp"
+	(
+		export PATH="${PATH}:$buildtmp/.cabal/bin"
+		export HOME="$buildtmp"
+		cabal update || return 1
+		cabal install -fstatic --ghc-option=-fllvm -fembed_data_files || return 1
+	)
+}
+
+package() {
+	cd "$_builddir"
+	install -d "$pkgdir/usr/bin" || return 1
+	pkg_pandoc="$buildtmp/.cabal/bin/$pkgname"
+	install -m755 "$pkg_pandoc" "$pkgdir/usr/bin" || return 1
+	install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE" || return 1
+}
+
+md5sums="6c338f4ba924642f7d24461f4fe20ff5  pandoc-1.17.2.tar.gz"
+sha256sums="81727d054dfb26de816ea59ed541ebaf60d66d440012c12ec02f9c2b02fee8ec  pandoc-1.17.2.tar.gz"
+sha512sums="32757fe0063c1a28442499a96ad81c7047780cc425e9d588d179b6b446ed65f9617558e49b1ecf7d1b513351d6781780fa000073683d57c102128ca95140881a  pandoc-1.17.2.tar.gz"
